@@ -314,7 +314,7 @@
 
     <div class="submit-wrap" id="submitWrap" style="display:none">
       <button type="submit" class="btn">🚀 送出報名</button>
-      <p class="submit-hint">送出後狀態為 <b>待審核 </b>，可隨時點擊上方「🔍 查看我的報名」查詢審核進度。</p>
+      <p class="submit-hint">送出後狀態為 <b>待審核</b>，可隨時點擊上方「🔍 查看我的報名」查詢審核進度。</p>
     </div>
     <div class="q" id="endCard" style="display:none;text-align:center"><div class="q-title" style="justify-content:center"><span>🚫 尚未完成掃碼授權，無法繼續報名</span></div><p style="color:var(--muted);font-size:14px;line-height:1.8;margin-top:12px">您選擇了「海外流量推薦」但尚未完成掃碼授權。請先用 TikTok App 掃描上方 QR Code 完成綁定後，再重新填寫本表單。</p></div>
   </form>
@@ -333,7 +333,7 @@
   <div class="modal__card">
     <div class="modal__icon">✓</div>
     <h3>報名已送出！</h3>
-    <p>感謝您報名「7月午間開播流量加碼計畫」。目前狀態為 <b>待審核</b>。可於「🔍 查看我的報名」隨時查詢審核結果。</p>
+    <p>感謝您報名「7月午間開播流量加碼計畫」。目前狀態為 <b>待審核</b>，可於「🔍 查看我的報名」隨時查詢審核結果。</p>
     <div class="summary" id="modalSummary"></div>
     <button class="btn" style="max-width:none" onclick="document.getElementById('modal').classList.remove('show')">我知道了</button>
   </div>
@@ -596,10 +596,12 @@ async function doLookup(){
     const st=r.status||'pending';
     const stLabel=r.status_label||({pending:'待審核',approved:'已通過',rejected:'未通過'}[st]||st);
     const badge='<span class="st-badge '+st+'">'+stLabel+'</span>';
+    const base='<b>審核狀態：</b>'+badge+'<br><b>參與活動：</b>'+(r.plan||'-')+'<br><b>使用者名稱：</b>'+(r.username||'-')+'<br><b>申請時段：</b>'+(r.slots||'-');
+    if(st==='rejected'){ return '<div class="my-rec">'+base+'</div>'; }
     let note='';
-    if(r.notify_msg){ note='<div class="my-note '+st+'">🔔 '+String(r.notify_msg).replace(/\n/g,'<br>')+'</div>'; }
-    else if(st==='pending'){ note='<div class="my-note pending">🔔 報名已送出，營運審核中；通過後將於此顯示通知，金魔杖名額才會為您保留。</div>'; }
-    return '<div class="my-rec"><b>審核狀態：</b>'+badge+'<br><b>參與活動：</b>'+(r.plan||'-')+'<br><b>使用者名稱：</b>'+(r.username||'-')+'<br><b>申請時段：</b>'+(r.slots||'-')+'<br><b>報名時間：</b>'+t+note+'</div>';
+    if(st==='pending'){ note='<div class="my-note pending">🔔 報名已送出，營運審核中；通過後將於此顯示通知。</div>'; }
+    else if(r.notify_msg){ note='<div class="my-note '+st+'">🔔 '+String(r.notify_msg).replace(/\n/g,'<br>')+'</div>'; }
+    return '<div class="my-rec">'+base+'<br><b>報名時間：</b>'+t+note+'</div>';
   }).join('');
 }
 
