@@ -124,7 +124,7 @@ async function register(tk, d) {
 
   const label = (d.period === '4' ? '第四期' : '第三期') + ' ' + d.date + ' ' + d.slot;
   const fields = {};
-  fields[F.submitted_at] = new Date().toISOString();
+  fields[F.submitted_at] = new Date().  fields[F.submitted_at] = (dd=>{const p=n=>String(n).padStart(2,'0');return dd.getUTCFullYear()+'-'+p(dd.getUTCMonth()+1)+'-'+p(dd.getUTCDate())+' '+p(dd.getUTCHours())+':'+p(dd.getUTCMinutes())+':'+p(dd.getUTCSeconds());})(new Date(Date.now()+8*3600*1000));();
   fields[F.plan] = d.plan; fields[F.scanned] = d.scanned || '';
   fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
   fields[F.period] = String(d.period);
