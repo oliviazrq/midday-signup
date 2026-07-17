@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>7月午間開播流量加碼計畫 ｜ 報名表</title>
+<meta name="description" content="TikTok LIVE 7月午間開播流量加碼計畫 報名表">
+<meta property="og:title" content="TikTok LIVE ｜ 7月午間開播流量加碼計畫 報名表">
+<meta property="og:description" content="午間場開播即享流量加碼，選好時段完成報名，一起把午間場炒熱！">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg-1:#0a0e1a; --bg-2:#0f1428;
+    --card:rgba(255,255,255,.055); --card-solid:#141a2e;
+    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.20);
+    --text:#eef2fb; --muted:#9aa7c4;
+    --cyan:#22d3ee; --blue:#4b7bff; --violet:#a855f7; --magenta:#fe2c55;
+    --gold:#ffce4d; --ok:#2ee6a6; --req:#ff5d63;
+    --radius:20px;
+    --grad:linear-gradient(92deg,#22d3ee 0%,#4b7bff 48%,#a855f7 100%);
+    --grad-2:linear-gradient(120deg,#fe2c55,#a855f7 55%,#4b7bff);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Noto Sans TC","Outfit",system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--text);background:var(--bg-1);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  /* animated aurora background */
+  .bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.55;mix-blend-mode:screen;animation:float 18s ease-in-out infinite}
+  .orb.a{width:440px;height:440px;background:#22d3ee;top:-120px;left:-100px}
+  .orb.b{width:480px;height:480px;background:#a855f7;top:-60px;right:-160px;animation-delay:-4s}
+  .orb.c{width:420px;height:420px;background:#fe2c55;bottom:-160px;left:20%;animation-delay:-9s;opacity:.4}
+  .orb.d{width:360px;height:360px;background:#4b7bff;bottom:-120px;right:-80px;animation-delay:-13s}
+  @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,50px) scale(1.12)}66%{transform:translate(-30px,20px) scale(.94)}}
+  @media (prefers-reduced-motion: reduce){.orb,.head::before,.live{animation:none!important}}
+
+  .wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:0 16px 70px}
+
+  /* demo banner */
+  .demo-banner{margin:14px 0 0;padding:10px 14px;border-radius:12px;font-size:12.5px;font-weight:700;line-height:1.5;
+    background:rgba(255,206,77,.12);border:1px solid rgba(255,206,77,.4);color:#ffdf8a;display:none}
+  .demo-banner.show{display:block;animation:fadeUp .5s both}
+
+  /* ===== HEADER ===== */
+  .head{
+    position:relative;margin:20px 0 6px;border-radius:26px;overflow:hidden;
+    border:1px solid var(--line-2);padding:32px 24px 28px;
+    background:linear-gradient(150deg,rgba(34,211,238,.16),rgba(75,123,255,.10) 45%,rgba(168,85,247,.18));
+    box-shadow:0 30px 70px -34px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.14);
+    animation:fadeUp .7s both;
+  }
+  .head::before{
+    content:"";position:absolute;inset:-40%;z-index:0;opacity:.5;
+    background:conic-gradient(from 0deg,transparent 0deg,rgba(34,211,238,.4) 60deg,transparent 130deg,rgba(168,85,247,.45) 220deg,transparent 300deg);
+    animation:spin 14s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .head>*{position:relative;z-index:1}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;font-size:17px;margin-bottom:16px;letter-spacing:.3px}
+  .live{position:relative;background:var(--magenta);color:#fff;font-family:"Outfit";font-weight:800;font-size:11px;letter-spacing:2px;padding:3px 9px;border-radius:6px;animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(254,44,85,.55)}70%{box-shadow:0 0 0 14px rgba(254,44,85,0)}100%{box-shadow:0 0 0 0 rgba(254,44,85,0)}}
+  .head h1{
+    font-size:clamp(26px,6.2vw,38px);font-weight:900;line-height:1.16;letter-spacing:.5px;
+    background:linear-gradient(92deg,#5ff0ff,#7ea2ff 45%,#d6a2ff);-webkit-background-clip:text;background-clip:text;color:transparent;
+    background-size:200% auto;animation:shine 6s linear infinite;
+  }
+  @keyframes shine{to{background-position:200% center}}
+  .head .sub{margin-top:15px;display:flex;flex-wrap:wrap;gap:9px}
+  .head .chip{background:rgba(255,255,255,.08);border:1px solid var(--line-2);padding:7px 14px;border-radius:999px;font-size:13px;font-weight:700;color:#dfe6f7;backdrop-filter:blur(6px)}
+  .head .desc{margin-top:15px;font-size:14px;line-height:1.75;color:#c5cee5}
+
+  /* progress bar */
+  .prog{position:sticky;top:0;z-index:30;margin:0 -16px 0;padding:10px 16px;backdrop-filter:blur(10px);
+    background:linear-gradient(180deg,rgba(10,14,26,.92),rgba(10,14,26,.55));border-bottom:1px solid var(--line)}
+  .prog-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px}
+  .prog-track{flex:1;height:8px;border-radius:999px;background:rgba(255,255,255,.09);overflow:hidden}
+  .prog-fill{height:100%;width:0;border-radius:999px;background:var(--grad);transition:width .5s cubic-bezier(.4,.1,.2,1);box-shadow:0 0 12px rgba(75,123,255,.6)}
+  .prog-txt{font-size:12px;font-weight:800;color:var(--muted);font-family:"Outfit";white-space:nowrap}
+  .prog-txt b{color:#eef2fb}
+
+  /* ===== PERIOD SLIDER ===== */
+  .period-wrap{margin-top:18px}
+  .period-label{font-size:12.5px;color:var(--muted);font-weight:700;margin:0 0 8px 4px;display:flex;align-items:center;gap:6px}
+  .switch{position:relative;display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.06);
+    border:1px solid var(--line-2);border-radius:15px;padding:5px;overflow:hidden}
+  .switch .thumb{position:absolute;top:5px;left:5px;width:calc(50% - 5px);height:calc(100% - 10px);
+    border-radius:11px;background:var(--grad);box-shadow:0 8px 22px -8px rgba(75,123,255,.7);
+    transition:transform .34s cubic-bezier(.4,.1,.2,1);z-index:0}
+  .switch.p4 .thumb{transform:translateX(100%)}
+  .switch button{position:relative;z-index:1;background:none;border:none;cursor:pointer;font-family:inherit;
+    padding:11px 8px;border-radius:11px;color:var(--muted);font-weight:800;font-size:14.5px;transition:.2s color;
+    display:flex;flex-direction:column;gap:2px;align-items:center;line-height:1.2}
+  .switch button .rg{font-size:11px;font-weight:600;opacity:.85}
+  .switch button.on{color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.35)}
+
+  /* ===== QUESTION CARD ===== */
+  .q{background:var(--card);border-radius:var(--radius);border:1px solid var(--line);
+     padding:22px 20px;margin-top:16px;backdrop-filter:blur(10px);box-shadow:0 20px 44px -34px rgba(0,0,0,.8);
+     animation:fadeUp .5s both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  .q-title{font-size:16.5px;font-weight:800;line-height:1.5;display:flex;gap:10px}
+  .q-title .no{flex:0 0 auto;width:25px;height:25px;border-radius:9px;display:grid;place-items:center;font-family:"Outfit";
+    font-weight:800;font-size:13px;color:#fff;background:var(--grad);box-shadow:0 6px 14px -6px rgba(75,123,255,.7)}
+  .q-title .req{color:var(--req);margin-left:2px}
+  .q-desc{color:var(--muted);font-size:13px;margin:8px 0 14px;padding-left:35px;line-height:1.65}
+  .q-desc.nogap{margin-bottom:12px}
+  .q-desc b{color:#ffd9db}
+
+  .opt{display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid var(--line);border-radius:14px;
+    padding:15px 16px;margin-top:11px;background:rgba(255,255,255,.03);font-size:14.5px;font-weight:600;color:#dbe3f6;transition:.16s}
+  .opt:hover{border-color:var(--line-2);background:rgba(255,255,255,.07);transform:translateY(-1px)}
+  .opt.sel{border-color:transparent;background:linear-gradient(var(--card-solid),var(--card-solid)) padding-box,var(--grad) border-box;box-shadow:0 0 0 3px rgba(75,123,255,.22)}
+  .opt input{width:19px;height:19px;accent-color:var(--blue);flex:0 0 auto}
+
+  input[type=text],input[type=url]{width:100%;padding:14px 15px;border:1.5px solid var(--line);border-radius:13px;
+    font-size:14.5px;font-family:inherit;color:var(--text);background:rgba(255,255,255,.04);transition:.16s}
+  input::placeholder{color:#7180a0}
+  input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(75,123,255,.2);background:rgba(255,255,255,.07)}
+  input.invalid{border-color:var(--req);box-shadow:0 0 0 4px rgba(255,93,99,.18)}
+  .err{color:var(--req);font-size:12.5px;font-weight:700;display:none;margin-top:8px;padding-left:2px}
+  .err.show{display:block;animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+  .qr-card{margin-top:12px;border:1.5px dashed rgba(34,211,238,.5);border-radius:15px;
+    background:linear-gradient(160deg,rgba(34,211,238,.09),rgba(75,123,255,.07));padding:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+  .qr-card .qr{width:116px;height:116px;background:#fff;border-radius:13px;padding:8px;display:grid;place-items:center;box-shadow:0 10px 24px -10px rgba(0,0,0,.6)}
+  .qr-card .qr img,.qr-card .qr canvas{width:100%!important;height:100%!important}
+  .qr-card .txt{flex:1;min-width:200px}
+  .qr-card .txt strong{color:#6fe6f5;font-size:14px}
+  .qr-card .txt p{color:#b9c3dd;font-size:12.5px;line-height:1.65;margin-top:6px}
+
+  /* ===== SLOTS / GOLDEN WAND ===== */
+  .slot-note{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:2px 0 6px;padding-left:35px}
+  .slot-note .tag{background:rgba(255,206,77,.15);color:var(--gold);font-weight:800;font-size:12px;padding:4px 11px;border-radius:999px;border:1px solid rgba(255,206,77,.35)}
+  .period-banner{margin:12px 0 4px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:12px 15px;border-radius:13px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .period-banner .pname{font-weight:900;font-size:15px}
+  .period-banner .pname span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .period-banner .premain{font-size:12.5px;color:var(--muted)}
+  .period-banner .premain b{color:var(--gold);font-family:"Outfit";font-size:15px}
+
+  .day{border:1px solid var(--line);border-radius:17px;padding:13px 13px 15px;margin-top:12px;background:rgba(255,255,255,.03)}
+  .day-h{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .day-h .d{font-weight:900;font-size:15px;color:#eef2fb;font-family:"Outfit"}
+  .day-h .w{font-size:12px;font-weight:700;color:#fff;background:linear-gradient(90deg,var(--cyan),var(--blue));padding:2px 10px;border-radius:999px}
+  .day-h .full-tag{margin-left:auto;font-size:12px;font-weight:800;color:var(--req);display:none}
+  .day.day-full .full-tag{display:block}
+  .slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slot{cursor:pointer;border:1.5px solid var(--line);border-radius:13px;padding:12px;background:rgba(255,255,255,.05);
+    display:flex;flex-direction:column;gap:8px;transition:.18s;position:relative}
+  .slot:hover:not(.full):not(.locked){border-color:var(--line-2);transform:translateY(-2px);box-shadow:0 12px 26px -18px rgba(34,211,238,.7)}
+  .slot.sel{border-color:transparent;background:linear-gradient(var(--card-solid),var(--card-solid)) padding-box,var(--grad) border-box;box-shadow:0 0 0 3px rgba(75,123,255,.24)}
+  .slot .t{font-size:13.5px;font-weight:800;color:#eef2fb;display:flex;align-items:center;gap:7px}
+  .slot .t input{width:16px;height:16px;accent-color:var(--blue)}
+  .slot .bal{font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;color:var(--gold)}
+  .slot .bal .dots{display:inline-flex;gap:3px}
+  .slot .bal .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 6px rgba(255,206,77,.6)}
+  .slot .bal .dot.used{background:rgba(255,255,255,.16);box-shadow:none}
+  .slot.low .bal{color:#ffb638}
+  .slot.full{cursor:not-allowed;opacity:.55;background:rgba(255,255,255,.02);border-style:dashed}
+  .slot.full .t{color:#7180a0;text-decoration:line-through}
+  .slot.full .bal{color:var(--req)}
+  .slot.locked{opacity:.5;cursor:not-allowed;background:rgba(255,255,255,.02);border-style:dashed}
+  .slot.locked .t,.slot.locked .bal{color:#7180a0}
+
+  /* ===== SUBMIT ===== */
+  .submit-wrap{margin-top:24px;text-align:center}
+  .btn{cursor:pointer;border:none;font-weight:800;font-size:16.5px;font-family:inherit;padding:16px 40px;border-radius:999px;
+    width:100%;max-width:360px;transition:.2s;color:#fff;background:var(--grad);background-size:200% 100%;background-position:0 0;
+    box-shadow:0 18px 38px -16px rgba(75,123,255,.75);position:relative;overflow:hidden}
+  .btn:hover{transform:translateY(-2px);background-position:100% 0;box-shadow:0 24px 46px -18px rgba(168,85,247,.7)}
+  .btn:active{transform:translateY(0)}
+  .btn[disabled]{opacity:.7;cursor:progress}
+  .submit-hint{margin-top:13px;font-size:12.5px;color:var(--muted);line-height:1.6}
+
+  /* ===== MODAL ===== */
+  .modal{position:fixed;inset:0;background:rgba(4,7,16,.65);backdrop-filter:blur(7px);display:none;place-items:center;z-index:70;padding:20px}
+  .modal.show{display:grid;animation:fade .25s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .modal__card{background:var(--card-solid);border:1px solid var(--line-2);border-radius:26px;max-width:420px;width:100%;padding:34px 26px;text-align:center;box-shadow:0 36px 90px -24px rgba(0,0,0,.8);animation:pop .35s cubic-bezier(.2,.9,.3,1.2);position:relative}
+  @keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal__icon{width:78px;height:78px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;font-size:38px;color:#fff;background:var(--grad);box-shadow:0 16px 34px -12px rgba(75,123,255,.7);animation:popIcon .5s .1s both}
+  @keyframes popIcon{from{transform:scale(0) rotate(-40deg)}to{transform:scale(1) rotate(0)}}
+  .modal__card h3{font-size:22px;margin-bottom:8px}
+  .modal__card p{color:var(--muted);font-size:13.5px;line-height:1.7}
+  .modal__card .summary{text-align:left;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:15px;padding:14px 16px;margin:16px 0;font-size:13.5px;color:#dbe3f6;line-height:1.9}
+  .modal__card .summary b{color:var(--cyan)}
+  .modal input[type=text]{margin:14px 0 4px}
+
+  footer{margin-top:32px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.85}
+  .adm{margin-top:12px}
+  .adm button{background:rgba(255,255,255,.05);border:1px solid var(--line-2);color:#c5cee5;border-radius:999px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:inherit;margin:4px}
+  .adm button:hover{background:rgba(255,255,255,.1)}
+
+  .chip-btn{cursor:pointer;font-family:inherit;background:var(--grad);border:none;color:#fff;box-shadow:0 8px 18px -8px rgba(75,123,255,.7)}
+  .chip-btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:rgba(255,255,255,.08);color:#dbe3f6;box-shadow:none}
+  .btn.ghost:hover{background:rgba(255,255,255,.14);box-shadow:none;transform:none}
+  .my-results{text-align:left;max-height:280px;overflow:auto;margin:6px 0}
+  .my-rec{border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-top:10px;background:rgba(255,255,255,.04);font-size:13px;line-height:1.75;color:#dbe3f6}
+  .my-rec b{color:var(--cyan)}
+  .my-empty{color:var(--muted);font-size:13px;padding:14px 0}
+  .st-badge{display:inline-block;font-size:11.5px;font-weight:800;padding:2px 10px;border-radius:999px;vertical-align:middle}
+  .st-badge.pending{background:rgba(255,206,77,.16);color:var(--gold);border:1px solid rgba(255,206,77,.4)}
+  .st-badge.approved{background:rgba(46,230,166,.16);color:var(--ok);border:1px solid rgba(46,230,166,.4)}
+  .st-badge.rejected{background:rgba(255,93,99,.15);color:var(--req);border:1px solid rgba(255,93,99,.4)}
+  .my-note{margin-top:9px;padding:10px 12px;border-radius:11px;font-size:12.5px;line-height:1.6}
+  .my-note.approved{background:rgba(46,230,166,.1);border:1px solid rgba(46,230,166,.3);color:#7ff0cd}
+  .my-note.rejected{background:rgba(255,93,99,.09);border:1px solid rgba(255,93,99,.28);color:#ffb0b3}
+  .my-note.pending{background:rgba(255,206,77,.09);border:1px solid rgba(255,206,77,.28);color:#ffdf8a}
+
+  /* confetti */
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:80;display:none}
+  #confetti.show{display:block}
+
+  @media(max-width:520px){ .slots{grid-template-columns:1fr} .head{padding:26px 18px 24px} }
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div><div class="orb d"></div></div>
+
+<!-- progress -->
+<div class="prog"><div class="prog-inner">
+  <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+  <div class="prog-txt"><b id="progNow">0</b>/<span id="progTot">5</span> 已完成</div>
+</div></div>
+
+<div class="wrap">
+
+  <!-- ===== HEADER ===== -->
+  <div class="head">
+    <div class="brand">TikTok <span class="live">LIVE</span></div>
+    <h1>7月午間開播流量加碼計畫</h1>
+    <div class="sub">
+      <span class="chip">📅 午間場 10:00–14:00</span>
+      <span class="chip">🪄 金魔杖名額限量</span>
+      <button type="button" class="chip chip-btn" id="myRegBtn">🔍 查看我的報名</button>
+    </div>
+    <p class="desc">主播們衝起來！午間場開播即享流量加碼，選好你的時段完成報名，一起把午間場炒熱 🔥</p>
+    <div class="demo-banner" id="demoBanner">⚙️ 目前為「示範模式」：尚未連接後端，報名資料只會暫存在這台裝置。上線收單前請依 README 設定飛書多維表格（Bitable）後端。</div>
+
+    <!-- period slider -->
+    <div class="period-wrap">
+      <div class="period-label">🎚️ 選擇報名期數</div>
+      <div class="switch" id="switch">
+        <div class="thumb"></div>
+        <button type="button" data-p="3" class="on">第三期<span class="rg">7/20 – 7/26</span></button>
+        <button type="button" data-p="4">第四期<span class="rg">7/27 – 7/31</span></button>
+      </div>
+    </div>
+  </div>
+
+  <form id="regForm" novalidate="">
+
+    <!-- Q1 -->
+    <div class="q">
+      <div class="q-title"><span class="no">1</span><span>計畫參與活動<span class="req">*</span></span></div>
+      <div class="q-desc nogap">請選擇您本次要參與的流量推薦類型。</div>
+      <label class="opt"><input type="radio" name="plan" value="本地流量推薦"><span>選項一：本地流量推薦</span></label>
+      <label class="opt"><input type="radio" name="plan" value="海外流量推薦"><span>選項二：海外流量推薦</span></label>
+      <div class="err" data-err="plan">請選擇參與活動類型</div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q" id="q2" style="display:none">
+      <div class="q-title"><span class="no">2</span><span>針對選擇海外流量的主播，是否已完成掃碼授權<span class="req">*</span></span></div>
+      <div class="q-desc nogap">未完成掃碼不能參加海外流量推薦。</div>
+      <label class="opt"><input type="radio" name="scanned" value="是，已完成掃碼授權"><span>是</span></label>
+      <label class="opt"><input type="radio" name="scanned" value="否，尚未完成掃碼"><span>否</span></label>
+      <div class="err" data-err="scanned">請選擇是否已完成掃碼授權</div>
+      <div class="qr-card">
+        <div class="qr" id="qrcode"></div>
+        <div class="txt">
+          <strong>🌏 尚未掃碼？請用 TikTok App 掃描綁定</strong>
+          <p>選擇「海外流量推薦」的主播，務必掃描此 QR Code 完成授權綁定；若未完成，平台將無法提供後續海外流量支持。（此 QR 可由營運人員在程式碼 CONFIG.QR_LINK 替換為正式綁定連結）</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q" id="q3" style="display:none">
+      <div class="q-title"><span class="no">3</span><span>TikTok 使用者名稱<span class="req">*</span></span></div>
+      <div class="q-desc">開啟 TikTok → 個人資料 → 點擊頭像框下方的使用者名稱 @xxx，進行複製後直接貼上（不需包含 @ 符號）。</div>
+      <input type="text" name="username" placeholder="輸入 TikTok 使用者名稱（不含 @）">
+      <div class="err" data-err="username">請填寫 TikTok 使用者名稱</div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q" id="q4" style="display:none">
+      <div class="q-title"><span class="no">4</span><span>推薦推流短影片連結（請提供作品 URL）<span class="req">*</span></span></div>
+      <div class="q-desc">視頻創作不能超過 90 天，作為獎勵發放。</div>
+      <input type="url" name="videourl" placeholder="貼上作品連結（https://...）">
+      <div class="err" data-err="videourl">請提供有效的作品 URL</div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q" id="q5" style="display:none">
+      <div class="q-title"><span class="no">5</span><span>流量扶持申請日期時間<span class="req">*</span></span></div>
+      <div class="q-desc nogap">⚠️ 流量扶持時段 = 您自己的開播時間，申請的時段您<b>必須實際開播</b>，未開播將無法獲得流量扶持。</div>
+      <div class="slot-note">
+        <span class="tag">每天限申請一個時段，選定後同日其他時段將自動鎖定</span>
+      </div>
+      <div class="period-banner">
+        <div class="pname">目前期數：<span id="pName">第三期</span></div>
+        <div class="premain" style="display:none">本期剩餘 🪄 <b id="pRemain">0</b>/<span id="pTotal">0</span></div>
+      </div>
+      <div id="slotGrid"></div>
+      <div class="err" data-err="slots">請至少選擇一個申請時段</div>
+    </div>
+
+    <div class="submit-wrap" id="submitWrap" style="display:none">
+      <button type="submit" class="btn">🚀 送出報名</button>
+      <p class="submit-hint">送出後狀態為 <b>待審核</b>，可隨時點擊上方「🔍 查看我的報名」查詢審核進度。</p>
+    </div>
+    <div class="q" id="endCard" style="display:none;text-align:center"><div class="q-title" style="justify-content:center"><span>🚫 尚未完成掃碼授權，無法繼續報名</span></div><p style="color:var(--muted);font-size:14px;line-height:1.8;margin-top:12px">您選擇了「海外流量推薦」但尚未完成掃碼授權。請先用 TikTok App 掃描上方 QR Code 完成綁定後，再重新填寫本表單。</p></div>
+  </form>
+
+  <footer>
+    <div>TikTok LIVE ｜ 7月午間開播流量加碼計畫</div>
+    <div>第三期 7/20–7/26 ｜ 第四期 7/27–7/31</div>
+    <div class="adm" id="admPanel" style="display:none">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px">🔒 營運專用面板（僅在網址加 ?admin=1 時顯示）</div>
+      <button id="exportBtn">⬇︎ 開啟報名資料（Google 試算表）</button>
+    </div>
+  </footer>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal__card">
+    <div class="modal__icon">✓</div>
+    <h3>報名已送出！</h3>
+    <p>感謝您報名「7月午間開播流量加碼計畫」。目前狀態為 <b>待審核</b>，營運審核通過後金魔杖名額才會為您保留。可於「🔍 查看我的報名」隨時查詢審核結果。</p>
+    <div class="summary" id="modalSummary"></div>
+    <button class="btn" style="max-width:none" onclick="document.getElementById('modal').classList.remove('show')">我知道了</button>
+  </div>
+</div>
+
+<div class="modal" id="myModal">
+  <div class="modal__card">
+    <div class="modal__icon" style="font-size:32px">🗂️</div>
+    <h3>查看我的報名</h3>
+    <p>輸入您報名時填寫的 TikTok 使用者名稱，即可查詢報名紀錄與審核狀態。</p>
+    <input type="text" id="myLookup" placeholder="輸入 TikTok 使用者名稱（不含 @）">
+    <div id="myResults" class="my-results"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn" style="max-width:none;flex:1" id="myLookupBtn">🔍 查詢</button>
+      <button class="btn ghost" style="max-width:none;flex:1" id="myCloseBtn">關閉</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+<script>
+/* =========================================================================
+   ⚙️ CONFIG —— 上線前只需改這裡（詳見 README.md）
+   ------------------------------------------------------------------------
+   API: 後端 API 網址。把本頁 + api/registration.js 一起部署到 Vercel 後，
+        直接填相對路徑 "/api/registration" 即可（同網域、免 CORS）。
+        留空 "" = 示範模式（資料只暫存在瀏覽器，方便你先預覽版面）。
+   QR_LINK: 海外流量掃碼綁定連結（會產生 QR Code）。
+   ========================================================================= */
+const CONFIG = {
+  API: "/api/registration",
+  QR_LINK: "https://www.tiktok.com/t/ZSXFg4ddf/"
+};
+
+const QUOTA = 5;
+const PERIODS = {
+  '3':{ label:'第三期', range:'7/20 – 7/26',
+    days:[{date:'7/20',w:'週一'},{date:'7/21',w:'週二'},{date:'7/22',w:'週三'},{date:'7/23',w:'週四'},{date:'7/24',w:'週五'},{date:'7/25',w:'週六'},{date:'7/26',w:'週日'}],
+    slots:['10:00-12:00','12:00-14:00'] },
+  '4':{ label:'第四期', range:'7/27 – 7/31',
+    days:[{date:'7/27',w:'週一'},{date:'7/28',w:'週二'},{date:'7/29',w:'週三'},{date:'7/30',w:'週四'},{date:'7/31',w:'週五'}],
+    slots:['10:00-12:00','12:00-14:00'] }
+};
+const DEMO = !CONFIG.API;
+const BAL_KEY='goldwand_used_v2';
+const SIGN_KEY='midday_signups_v3';
+
+let currentP='3';
+const selected=new Set();
+const form=document.getElementById('regForm');
+const slotGrid=document.getElementById('slotGrid');
+let USED = {};
+
+if(DEMO){ document.getElementById('demoBanner').classList.add('show'); }
+
+/* ---------- backend helpers (Google Apps Script or DEMO/localStorage) ---------- */
+const localSignups=()=>{try{return JSON.parse(localStorage.getItem(SIGN_KEY)||'[]')}catch(e){return []}};
+const saveLocalSignups=a=>localStorage.setItem(SIGN_KEY,JSON.stringify(a));
+function localUsed(){
+  const u={}; localSignups().forEach(r=>{ if(r.key) u[r.key]=(u[r.key]||0)+1; }); return u;
+}
+
+async function apiQuota(){
+  if(DEMO){ return localUsed(); }
+  const r=await fetch(CONFIG.API+'?action=quota',{cache:'no-store'});
+  if(!r.ok) throw new Error('quota http '+r.status);
+  const j=await r.json();
+  return (j && j.used) ? j.used : {};
+}
+async function apiRegister(payload){
+  if(DEMO){
+    const used=localUsed(); const k=payload.period+'|'+payload.date+'|'+payload.slot;
+    if((used[k]||0)>=QUOTA) return {ok:false,detail:'此時段金魔杖名額已額滿'};
+    const arr=localSignups();
+    arr.push({submitted_at:new Date().toISOString(),plan:payload.plan,scanned:payload.scanned,username:payload.username,videourl:payload.videourl,period:payload.period,date:payload.date,slot:payload.slot,key:k,slots:PERIODS[payload.period].label+' '+payload.date+' '+payload.slot,status:'pending'});
+    saveLocalSignups(arr);
+    return {ok:true};
+  }
+  const r=await fetch(CONFIG.API,{method:'POST',body:JSON.stringify(Object.assign({action:'register'},payload))});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok) return {ok:false,detail:(j&&j.detail)||('伺服器錯誤 ('+r.status+')')};
+  return j;
+}
+async function apiMy(username){
+  if(DEMO){
+    const q=username.trim().toLowerCase().replace(/^@/,'');
+    return localSignups().filter(r=>String(r.username||'').trim().toLowerCase().replace(/^@/,'')===q);
+  }
+  const r=await fetch(CONFIG.API+'?action=my&username='+encodeURIComponent(username),{cache:'no-store'});
+  if(!r.ok) throw new Error('http '+r.status);
+  const j=await r.json();
+  return Array.isArray(j.records)?j.records:[];
+}
+async function loadQuota(){
+  try{ USED=await apiQuota(); }
+  catch(e){ console.warn('loadQuota fallback:',e); USED=localUsed(); }
+}
+
+/* ---------- period switch ---------- */
+const sw=document.getElementById('switch');
+sw.querySelectorAll('button').forEach(b=>{
+  b.addEventListener('click',async ()=>{
+    currentP=b.dataset.p;
+    sw.classList.toggle('p4', currentP==='4');
+    sw.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b));
+    selected.clear();
+    await loadQuota(); renderSlots(); updateFlow();
+  });
+});
+
+/* ---------- render slots ---------- */
+function renderSlots(){
+  const P=PERIODS[currentP], used=USED;
+  document.getElementById('pName').textContent=P.label;
+  let periodRemain=0, periodTotal=0;
+  slotGrid.innerHTML='';
+  P.days.forEach(d=>{
+    let allFull=true, slotsHtml='';
+    P.slots.forEach(s=>{
+      const key=currentP+'|'+d.date+'|'+s;
+      const rem=QUOTA-(used[key]||0);
+      periodTotal+=QUOTA; periodRemain+=Math.max(0,rem);
+      if(rem>0) allFull=false;
+      const full=rem<=0, low=rem>0&&rem<=2, isSel=selected.has(key);
+      let dots=''; for(let i=0;i<QUOTA;i++) dots+='<span class="dot'+(i<(QUOTA-rem)?' used':'')+'"></span>';
+      slotsHtml+=
+        '<label class="slot'+(full?' full':'')+(low?' low':'')+(isSel?' sel':'')+'" data-key="'+key+'" data-date="'+d.date+'">'+
+          '<span class="t"><input type="checkbox" '+(isSel?'checked':'')+' '+(full?'disabled':'')+'>'+s+'</span>'+
+          '<span class="bal">'+(full?'額滿':'')+'</span>'+
+        '</label>';
+    });
+    const dayEl=document.createElement('div');
+    dayEl.className='day'+(allFull?' day-full':'');
+    dayEl.innerHTML='<div class="day-h"><span class="d">'+d.date+'</span><span class="w">'+d.w+'</span><span class="full-tag">本日額滿</span></div><div class="slots">'+slotsHtml+'</div>';
+    slotGrid.appendChild(dayEl);
+  });
+  const _r=document.getElementById('pRemain'); if(_r)_r.textContent=periodRemain;
+  const _t=document.getElementById('pTotal'); if(_t)_t.textContent=periodTotal;
+  bindSlots(); applyDayLocks();
+}
+function applyDayLocks(){
+  const days={};
+  slotGrid.querySelectorAll('.slot').forEach(s=>{ (days[s.dataset.date]=days[s.dataset.date]||[]).push(s); });
+  Object.values(days).forEach(list=>{
+    const hasSel=list.some(s=>s.classList.contains('sel'));
+    list.forEach(s=>{
+      if(s.classList.contains('full')) return;
+      const i=s.querySelector('input');
+      if(hasSel && !s.classList.contains('sel')){ s.classList.add('locked'); if(i) i.disabled=true; }
+      else { s.classList.remove('locked'); if(i) i.disabled=false; }
+    });
+  });
+}
+function bindSlots(){
+  slotGrid.querySelectorAll('.slot:not(.full) input').forEach(cb=>{
+    cb.addEventListener('change',e=>{
+      const label=e.target.closest('.slot'), key=label.dataset.key;
+      if(e.target.checked){ selected.add(key); label.classList.add('sel'); }
+      else{ selected.delete(key); label.classList.remove('sel'); }
+      applyDayLocks();
+      document.querySelector('[data-err="slots"]').classList.remove('show');
+      updateFlow();
+    });
+  });
+}
+
+/* ---------- QR ---------- */
+if(window.QRCode){ try{ new QRCode(document.getElementById('qrcode'),{text:CONFIG.QR_LINK,width:100,height:100,colorDark:'#0e1422',colorLight:'#ffffff'}); }catch(e){ document.getElementById('qrcode').textContent='QR'; } }
+
+/* ---------- radio chips ---------- */
+form.querySelectorAll('input[type=radio]').forEach(r=>{
+  r.addEventListener('change',e=>{
+    form.querySelectorAll('input[name="'+e.target.name+'"]').forEach(o=>o.closest('.opt').classList.remove('sel'));
+    e.target.closest('.opt').classList.add('sel');
+    const el=form.querySelector('[data-err="'+e.target.name+'"]'); if(el) el.classList.remove('show');
+    updateFlow();
+  });
+});
+['username','videourl'].forEach(n=>{
+  const inp=form.querySelector('input[name="'+n+'"]');
+  if(inp) inp.addEventListener('input',()=>{
+    const el=form.querySelector('[data-err="'+n+'"]'); if(el) el.classList.remove('show');
+    inp.classList.remove('invalid'); updateFlow();
+  });
+});
+
+/* ---------- progressive flow ---------- */
+function byId(id){return document.getElementById(id)}
+function show(id,visible){const e=byId(id); if(e) e.style.display=visible?'':'none';}
+let lastStep=null;
+function isAnswered(id){
+  if(id==='q1') return !!form.querySelector('input[name="plan"]:checked');
+  if(id==='q2') return !!form.querySelector('input[name="scanned"]:checked');
+  if(id==='q3'){const i=form.querySelector('input[name="username"]'); return !!(i&&i.value.trim());}
+  if(id==='q4'){const i=form.querySelector('input[name="videourl"]'); return !!(i&&i.value.trim());}
+  if(id==='q5') return selected.size>0;
+  return true;
+}
+function buildSeq(){
+  const plan=(form.querySelector('input[name="plan"]:checked')||{}).value;
+  const scanned=(form.querySelector('input[name="scanned"]:checked')||{}).value;
+  if(!plan) return ['q1'];
+  if(plan==='本地流量推薦') return ['q1','q3','q4','q5','submitWrap'];
+  if(!scanned) return ['q1','q2'];
+  if(scanned==='否，尚未完成掃碼') return ['q1','q2','endCard'];
+  return ['q1','q2','q3','q4','q5','submitWrap'];
+}
+function updateFlow(){
+  const seq=buildSeq();
+  ['q2','q3','q4','q5','submitWrap','endCard'].forEach(id=>show(id,false));
+  for(let i=1;i<seq.length;i++){ if(isAnswered(seq[i-1])) show(seq[i],true); else break; }
+  const visible=seq.filter((id,i)=> i===0 || (byId(id)&&byId(id).style.display!=='none'));
+  const deepest=visible[visible.length-1];
+  if(lastStep!==null && deepest!==lastStep){ const e=byId(deepest); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); }
+  lastStep=deepest;
+  updateProgress(seq);
+}
+function updateProgress(seq){
+  const steps=seq.filter(id=>id.indexOf('q')===0);
+  const total=Math.max(steps.length,1);
+  let done=0; for(const s of steps){ if(isAnswered(s)) done++; else break; }
+  byId('progNow').textContent=done; byId('progTot').textContent=total;
+  byId('progFill').style.width=Math.round(done/total*100)+'%';
+}
+
+const showErr=(n,s)=>{const el=form.querySelector('[data-err="'+n+'"]');if(el)el.classList.toggle('show',s);const i=form.querySelector('input[name="'+n+'"]');if(i&&i.type!=='radio')i.classList.toggle('invalid',s);};
+
+/* ---------- submit ---------- */
+form.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const d=new FormData(form); let ok=true;
+  if(!d.get('plan')){showErr('plan',true);ok=false;}
+  if(d.get('plan')==='海外流量推薦'&&!d.get('scanned')){showErr('scanned',true);ok=false;}
+  const uname=String(d.get('username')||'').trim(); if(!uname){showErr('username',true);ok=false;}
+  const vurl=String(d.get('videourl')||'').trim(); if(!vurl||!/^https?:\/\/.+/.test(vurl)){showErr('videourl',true);ok=false;}
+  if(selected.size===0){showErr('slots',true);ok=false;}
+  if(d.get('plan')==='海外流量推薦'&&d.get('scanned')==='否，尚未完成掃碼'){showErr('scanned',true);form.querySelector('[data-err="scanned"]').textContent='選擇海外流量推薦者，必須先完成掃碼授權';ok=false;}
+  if(!ok){const f=form.querySelector('.err.show');if(f)f.scrollIntoView({behavior:'smooth',block:'center'});return;}
+
+  const btn=form.querySelector('button[type=submit]'); btn.disabled=true; const oldTxt=btn.textContent; btn.textContent='送出中…';
+  const plan=d.get('plan'), scanned=d.get('scanned')||'';
+  const keys=[...selected]; const readable=[]; let anyErr=null;
+  for(const key of keys){
+    const [p,dt,s]=key.split('|');
+    try{
+      const j=await apiRegister({plan,scanned,username:uname,videourl:vurl,period:p,date:dt,slot:s});
+      if(!j.ok){ anyErr=j.detail||'送出失敗'; break; }
+      readable.push(PERIODS[p].label+' '+dt+' '+s);
+    }catch(err){ anyErr='網路連線失敗，請稍後再試。'; break; }
+  }
+  btn.disabled=false; btn.textContent=oldTxt;
+  if(anyErr){ alert(anyErr); await loadQuota(); renderSlots(); return; }
+
+  document.getElementById('modalSummary').innerHTML='<b>參與活動：</b>'+plan+'<br><b>TikTok 使用者名稱：</b>'+uname+'<br><b>申請時段：</b>'+readable.join(' / ');
+  document.getElementById('modal').classList.add('show');
+  fireConfetti();
+  form.reset(); selected.clear(); lastStep=null;
+  form.querySelectorAll('.opt.sel').forEach(o=>o.classList.remove('sel'));
+  await loadQuota(); renderSlots(); updateFlow(); window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- my registrations ---------- */
+const myModal=document.getElementById('myModal');
+document.getElementById('myRegBtn').addEventListener('click',()=>{
+  myModal.classList.add('show');
+  const u=(form.querySelector('input[name="username"]')||{}).value||'';
+  document.getElementById('myLookup').value=u.trim(); doLookup();
+});
+document.getElementById('myCloseBtn').addEventListener('click',()=>myModal.classList.remove('show'));
+document.getElementById('myLookupBtn').addEventListener('click',doLookup);
+document.getElementById('myLookup').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();doLookup();} });
+async function doLookup(){
+  const raw=document.getElementById('myLookup').value.trim().replace(/^@/,'');
+  const box=document.getElementById('myResults');
+  let list=[];
+  if(raw){ try{ list=await apiMy(raw); }catch(e){ console.warn('lookup fail',e); list=[]; } }
+  if(!list.length){ box.innerHTML='<div class="my-empty">查無報名紀錄。請確認 TikTok 使用者名稱是否正確。</div>'; return; }
+  box.innerHTML=list.slice().reverse().map(r=>{
+    let t='';try{t=new Date(r.submitted_at).toLocaleString('zh-TW')}catch(e){t=r.submitted_at||'-'}
+    const st=r.status||'pending';
+    const stLabel=r.status_label||({pending:'待審核',approved:'已通過',rejected:'未通過'}[st]||st);
+    const badge='<span class="st-badge '+st+'">'+stLabel+'</span>';
+    let note='';
+    if(r.notify_msg){ note='<div class="my-note '+st+'">🔔 '+String(r.notify_msg).replace(/\n/g,'<br>')+'</div>'; }
+    else if(st==='pending'){ note='<div class="my-note pending">🔔 報名已送出，營運審核中；通過後將於此顯示通知，金魔杖名額才會為您保留。</div>'; }
+    return '<div class="my-rec"><b>審核狀態：</b>'+badge+'<br><b>參與活動：</b>'+(r.plan||'-')+'<br><b>使用者名稱：</b>'+(r.username||'-')+'<br><b>申請時段：</b>'+(r.slots||'-')+'<br><b>報名時間：</b>'+t+note+'</div>';
+  }).join('');
+}
+
+/* ---------- operator: open the Google Sheet ---------- */
+(function(){
+  try{
+    const p=new URLSearchParams(location.search);
+    if(p.get('admin')==='1' || location.hash==='#admin'){ const a=document.getElementById('admPanel'); if(a) a.style.display=''; }
+  }catch(e){}
+})();
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  if(DEMO){
+    const rows=localSignups();
+    if(!rows.length){ alert('目前示範模式沒有任何報名資料。'); return; }
+    const head=['submitted_at','plan','scanned','username','videourl','slots','status'];
+    const csv=[head.join(',')].concat(rows.map(r=>head.map(h=>'"'+String(r[h]||'').replace(/"/g,'""')+'"').join(','))).join('\n');
+    const url=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));
+    const a=document.createElement('a'); a.href=url; a.download='signups_demo.csv'; a.click();
+    return;
+  }
+  window.open(CONFIG.API+'?action=export','_blank');
+});
+
+/* ---------- confetti ---------- */
+function fireConfetti(){
+  const cv=document.getElementById('confetti'); cv.classList.add('show');
+  const ctx=cv.getContext('2d'); cv.width=innerWidth; cv.height=innerHeight;
+  const colors=['#22d3ee','#4b7bff','#a855f7','#fe2c55','#ffce4d','#2ee6a6'];
+  const N=160, parts=[];
+  for(let i=0;i<N;i++){ parts.push({x:innerWidth/2,y:innerHeight*0.28,vx:(Math.random()-0.5)*14,vy:Math.random()*-14-4,g:0.35+Math.random()*0.2,s:6+Math.random()*7,c:colors[i%colors.length],r:Math.random()*Math.PI,vr:(Math.random()-0.5)*0.3,life:0}); }
+  let t=0;
+  (function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height); t++;
+    parts.forEach(p=>{ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vx*=0.99;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle=p.c; ctx.globalAlpha=Math.max(0,1-t/120);
+      ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.6); ctx.restore(); });
+    if(t<120) requestAnimationFrame(frame); else { cv.classList.remove('show'); ctx.clearRect(0,0,cv.width,cv.height); }
+  })();
+}
+addEventListener('resize',()=>{const cv=document.getElementById('confetti'); cv.width=innerWidth; cv.height=innerHeight;});
+
+/* ---------- init ---------- */
+(async function init(){ await loadQuota(); renderSlots(); updateFlow(); })();
+</script>
+</body>
+</html>
