@@ -33,6 +33,14 @@ const F = {
 };
 const STATUS_MAP = { '待審核': 'pending', '已通過': 'approved', '未通過': 'rejected' };
 
+// ---- 主播總覽（彙總表）：一位主播一行，後端自動同步 ----
+const OV_TABLE_ID = process.env.FEISHU_OVERVIEW_TABLE_ID || 'tbl5TsO0wVNlWzzR';
+const OF = {
+  username: 'TikTok使用者名稱', period: '期數', slotsSum: '申請時段彙總',
+  slotCount: '時段數', status: '整體審核狀態', plan: '參與活動',
+  videourl: '作品連結', notify: '通知訊息', latest: '最新報名時間'
+};
+
 async function token() {
   const r = await fetch(DOMAIN + '/open-apis/auth/v3/tenant_access_token/internal', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -121,6 +129,103 @@ function myRecords(rows, username) {
   return out;
 }
 
+// 由原始表所有列，彙整成「主播+期」→ 總覽欄位物件
+function submitMs(s) {
+  if (!s) return 0;
+  const t = Date.parse(String(s).trim().replace(' ', 'T') + '+08:00');
+  return isNaN(t) ? 0 : t;
+}
+function normU(s) { return String(s || '').trim().toLowerCase().replace(/^@/, ''); }
+function overviewGroups(rows) {
+  const g = {};
+  rows.forEach(r => {
+    const u = txt(r[F.username]).trim();
+    const ul = normU(u);
+    const p = String(txt(r[F.period]) || '');
+    if (!ul || !p) return;
+    const k = ul + '|' + p;
+    (g[k] = g[k] || { rows: [], username: u, period: p }).rows.push(r);
+  });
+  const map = {};
+  Object.keys(g).forEach(k => {
+    const recs = g[k].rows;
+    const labels = recs.map(r => txt(r[F.status]) || '待審核');
+    let label;
+    if (labels.some(l => l === '未通過')) label = '未通過';
+    else if (labels.length && labels.every(l => l === '已通過')) label = '已通過';
+    else label = '待審核';
+    let latest = 0; recs.forEach(r => { const ms = submitMs(txt(r[F.submitted_at])); if (ms > latest) latest = ms; });
+    if (!latest) latest = Date.now();
+    const fields = {};
+    fields[OF.username] = g[k].username;
+    fields[OF.period] = g[k].period;
+    fields[OF.slotsSum] = recs.map(r => txt(r[F.slots])).filter(Boolean).join('\n');
+    fields[OF.slotCount] = recs.length;
+    fields[OF.status] = label;
+    fields[OF.plan] = recs.map(r => txt(r[F.plan])).filter(Boolean)[0] || '';
+    fields[OF.videourl] = recs.map(r => txt(r[F.videourl])).filter(Boolean)[0] || '';
+    fields[OF.notify] = recs.map(r => txt(r[F.notify])).filter(Boolean).join('\n');
+    fields[OF.latest] = latest;
+    map[k] = fields;
+  });
+  return map;
+}
+async function ovList(tk) {
+  const out = []; let pt = '';
+  do {
+    const url = DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + OV_TABLE_ID +
+      '/records?page_size=500' + (pt ? '&page_token=' + pt : '');
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
+    const j = await r.json();
+    if (j.code !== 0) throw new Error('讀取總覽表失敗：' + (j.msg || JSON.stringify(j)));
+    (j.data.items || []).forEach(it => out.push({ id: it.record_id, fields: it.fields || {} }));
+    pt = j.data.has_more ? j.data.page_token : '';
+  } while (pt);
+  return out;
+}
+async function ovBatch(tk, op, payload) {
+  const r = await fetch(DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + OV_TABLE_ID + '/records/' + op, {
+    method: 'POST', headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const j = await r.json();
+  if (j.code !== 0) throw new Error('總覽表 ' + op + ' 失敗：' + (j.msg || JSON.stringify(j)));
+  return j;
+}
+// 即時：新報名後只同步「這一位主播＋期」，其他不動
+async function syncOne(tk, rows, username, period) {
+  try {
+    const all = overviewGroups(rows);
+    const fields = all[normU(username) + '|' + String(period)];
+    if (!fields) return;
+    const exist = await ovList(tk);
+    const hit = exist.find(it => normU(txt(it.fields[OF.username])) === normU(username) &&
+      String(txt(it.fields[OF.period])) === String(period));
+    if (hit) await ovBatch(tk, 'batch_update', { records: [{ record_id: hit.id, fields }] });
+    else await ovBatch(tk, 'batch_create', { records: [{ fields }] });
+  } catch (e) { console.warn('overview syncOne fail:', e && e.message); }
+}
+// 全量：重建整張總覽（能同步後台手動改過的審核狀態），由排程或手動觸發
+async function resyncAll(tk) {
+  const rows = await listAll(tk);
+  const desired = overviewGroups(rows);
+  const exist = await ovList(tk);
+  const existMap = {};
+  exist.forEach(it => { existMap[normU(txt(it.fields[OF.username])) + '|' + String(txt(it.fields[OF.period]) || '')] = it.id; });
+  const toCreate = [], toUpdate = [], seen = {};
+  Object.keys(desired).forEach(k => {
+    seen[k] = true;
+    if (existMap[k]) toUpdate.push({ record_id: existMap[k], fields: desired[k] });
+    else toCreate.push({ fields: desired[k] });
+  });
+  const toDelete = Object.keys(existMap).filter(k => !seen[k]).map(k => existMap[k]);
+  const chunk = (a, n) => { const o = []; for (let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
+  for (const c of chunk(toCreate, 500)) await ovBatch(tk, 'batch_create', { records: c });
+  for (const c of chunk(toUpdate, 500)) await ovBatch(tk, 'batch_update', { records: c });
+  for (const c of chunk(toDelete, 500)) await ovBatch(tk, 'batch_delete', { records: c });
+  return { groups: Object.keys(desired).length, created: toCreate.length, updated: toUpdate.length, deleted: toDelete.length };
+}
+
 async function register(tk, d) {
   const uname = String(d.username || '').trim();
   const vurl = String(d.videourl || '').trim();
@@ -155,6 +260,9 @@ async function register(tk, d) {
   fields[F.key] = key; fields[F.slots] = label;
   fields[F.status] = '待審核'; fields[F.notify] = '';
   await createRecord(tk, fields);
+  // 即時同步「主播總覽」彙總表（一位主播一行）
+  rows.push(fields);
+  await syncOne(tk, rows, uname, String(d.period));
   return { ok: true };
 }
 
@@ -186,6 +294,7 @@ module.exports = async (req, res) => {
     if (req.method === 'GET') {
       if (action === 'quota') return res.status(200).json({ ok: true, used: usedMap(await listAll(tk)) });
       if (action === 'my') return res.status(200).json({ ok: true, records: myRecords(await listAll(tk), req.query.username || '') });
+      if (action === 'resync') return res.status(200).json({ ok: true, ...(await resyncAll(tk)) });
       if (action === 'export') {
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
         res.setHeader('Content-Disposition', 'attachment; filename="signups.csv"');
