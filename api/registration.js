@@ -1,21 +1,3 @@
-/*************************************************************************
- *  Vercel Serverless Function —— 飛書多維表格（Bitable）報名後端
- *  路徑：/api/registration
- *  ----------------------------------------------------------------------
- *  作用：外部主播在公開報名頁送出的資料，經過這支函式安全地寫進你的
- *        飛書多維表格；名額、查詢、匯出也都由這裡處理。
- *        飛書的 App Secret 只放在伺服器環境變數，不會出現在網頁裡。
- *
- *  【需要設定的 Vercel 環境變數 (Settings → Environment Variables)】
- *    FEISHU_APP_ID       自建應用的 App ID
- *    FEISHU_APP_SECRET   自建應用的 App Secret
- *    FEISHU_APP_TOKEN    多維表格的 app_token（Base ID）
- *    FEISHU_TABLE_ID     資料表的 table_id
- *    FEISHU_DOMAIN       (選填) 飛書=https://open.feishu.cn (預設)
- *                              Lark 國際版=https://open.larksuite.com
- *  詳見 README.md
- *************************************************************************/
-
 const DOMAIN = process.env.FEISHU_DOMAIN || 'https://open.feishu.cn';
 const APP_ID = process.env.FEISHU_APP_ID;
 const APP_SECRET = process.env.FEISHU_APP_SECRET;
@@ -24,7 +6,6 @@ const TABLE_ID = process.env.FEISHU_TABLE_ID;
 const QUOTA = 5;
 const ONE_SLOT_PER_DAY = true;
 
-// 飛書多維表格的欄位名稱（對應你表格裡實際的欄位）
 const F = {
   submitted_at: '報名時間', plan: '參與活動', scanned: '掃碼授權',
   username: 'TikTok使用者名稱', videourl: '作品連結', period: '期數',
@@ -32,6 +13,13 @@ const F = {
   status: '審核狀態', notify: '通知訊息'
 };
 const STATUS_MAP = { '待審核': 'pending', '已通過': 'approved', '未通過': 'rejected' };
+
+function fmtTwTime() {
+  const d = new Date(Date.now() + 8 * 3600 * 1000);
+  const p = n => String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) +
+    ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds());
+}
 
 async function token() {
   const r = await fetch(DOMAIN + '/open-apis/auth/v3/tenant_access_token/internal', {
@@ -124,7 +112,7 @@ async function register(tk, d) {
 
   const label = (d.period === '4' ? '第四期' : '第三期') + ' ' + d.date + ' ' + d.slot;
   const fields = {};
-  fields[F.submitted_at] = new Date().  fields[F.submitted_at] = (dd=>{const p=n=>String(n).padStart(2,'0');return dd.getUTCFullYear()+'-'+p(dd.getUTCMonth()+1)+'-'+p(dd.getUTCDate())+' '+p(dd.getUTCHours())+':'+p(dd.getUTCMinutes())+':'+p(dd.getUTCSeconds());})(new Date(Date.now()+8*3600*1000));();
+  fields[F.submitted_at] = fmtTwTime();
   fields[F.plan] = d.plan; fields[F.scanned] = d.scanned || '';
   fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
   fields[F.period] = String(d.period);
