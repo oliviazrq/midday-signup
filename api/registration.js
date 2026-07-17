@@ -84,17 +84,41 @@ function usedMap(rows) {
   return used;
 }
 
+function periodName(p) {
+  if (p === '4') return '第四期';
+  if (p === '3') return '第三期';
+  return p ? ('第' + p + '期') : '其他';
+}
+
+// 以「主播 + 期」為維度彙整：同一期只要有一筆未通過 → 整期未通過；全部已通過 → 整期已通過；否則待審核
 function myRecords(rows, username) {
   const q = String(username || '').trim().toLowerCase().replace(/^@/, '');
   if (!q) return [];
-  return rows.filter(r => txt(r[F.username]).trim().toLowerCase().replace(/^@/, '') === q).map(r => {
-    const label = txt(r[F.status]) || '待審核';
-    return {
-      submitted_at: txt(r[F.submitted_at]), plan: txt(r[F.plan]), scanned: txt(r[F.scanned]),
-      username: txt(r[F.username]), videourl: txt(r[F.videourl]), slots: txt(r[F.slots]),
-      status: STATUS_MAP[label] || 'pending', status_label: label, notify_msg: txt(r[F.notify])
-    };
+  const mine = rows.filter(r => txt(r[F.username]).trim().toLowerCase().replace(/^@/, '') === q);
+  const byPeriod = {};
+  mine.forEach(r => {
+    const p = txt(r[F.period]) || '-';
+    (byPeriod[p] = byPeriod[p] || []).push(r);
   });
+  const out = [];
+  Object.keys(byPeriod).sort().forEach(p => {
+    const recs = byPeriod[p];
+    const labels = recs.map(r => txt(r[F.status]) || '待審核');
+    let label;
+    if (labels.some(l => l === '未通過')) label = '未通過';
+    else if (labels.length && labels.every(l => l === '已通過')) label = '已通過';
+    else label = '待審核';
+    const slotList = recs.map(r => txt(r[F.slots]).replace(/^第\S+期\s*/, '')).filter(Boolean);
+    const slotsText = periodName(p) + '：' + slotList.join('、');
+    const notify = recs.map(r => txt(r[F.notify])).filter(Boolean).join('\n');
+    const submitted = recs.map(r => txt(r[F.submitted_at])).filter(Boolean).sort()[0] || '';
+    out.push({
+      submitted_at: submitted, plan: txt(recs[0][F.plan]), scanned: txt(recs[0][F.scanned]),
+      username: txt(recs[0][F.username]), videourl: txt(recs[0][F.videourl]), slots: slotsText,
+      status: STATUS_MAP[label] || 'pending', status_label: label, notify_msg: notify
+    });
+  });
+  return out;
 }
 
 async function register(tk, d) {
@@ -120,11 +144,11 @@ async function register(tk, d) {
     if (ONE_SLOT_PER_DAY && rperiod == d.period && rdate == d.date && ru === unameLower)
       return { ok: false, detail: '同一天僅能申請一個時段，您當天已有報名。' };
   }
-  if (count >= QUOTA) return { ok: false, detail: '此時段金魔杖名額已額滿' };
+  // 名額上限已取消：不再限制每個時段的報名數量，主播可正常報名
 
   const label = (d.period === '4' ? '第四期' : '第三期') + ' ' + d.date + ' ' + d.slot;
   const fields = {};
-  fields[F.submitted_at] = new Date().toISOString();
+  fields[F.submitted_at] = (dd=>{const p=n=>String(n).padStart(2,'0');return dd.getUTCFullYear()+'-'+p(dd.getUTCMonth()+1)+'-'+p(dd.getUTCDate())+' '+p(dd.getUTCHours())+':'+p(dd.getUTCMinutes())+':'+p(dd.getUTCSeconds());})(new Date(Date.now()+8*3600*1000));
   fields[F.plan] = d.plan; fields[F.scanned] = d.scanned || '';
   fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
   fields[F.period] = String(d.period);
