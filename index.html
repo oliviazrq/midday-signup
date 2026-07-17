@@ -238,7 +238,6 @@
     <h1>7月午間開播流量加碼計畫</h1>
     <div class="sub">
       <span class="chip">📅 午間場 10:00–14:00</span>
-      <span class="chip">🪄 金魔杖名額限量</span>
       <button type="button" class="chip chip-btn" id="myRegBtn">🔍 查看我的報名</button>
     </div>
     <p class="desc">主播們衝起來！午間場開播即享流量加碼，選好你的時段完成報名，一起把午間場炒熱 🔥</p>
@@ -277,7 +276,7 @@
         <div class="qr" id="qrcode"></div>
         <div class="txt">
           <strong>🌏 尚未掃碼？請用 TikTok App 掃描綁定</strong>
-          <p>選擇「海外流量推薦」的主播，務必掃描此 QR Code 完成授權綁定；若未完成，平台將無法提供後續海外流量支持。（此 QR 可由營運人員在程式碼 CONFIG.QR_LINK 替換為正式綁定連結）</p>
+          <p>選擇「海外流量推薦」的主播，務必掃描此 QR Code 完成授權綁定；若未完成，平台將無法提供後續海外流量支持。</p>
         </div>
       </div>
     </div>
@@ -356,17 +355,9 @@
 
 <canvas id="confetti"></canvas>
 <script>
-/* =========================================================================
-   ⚙️ CONFIG —— 上線前只需改這裡（詳見 README.md）
-   ------------------------------------------------------------------------
-   API: 後端 API 網址。把本頁 + api/registration.js 一起部署到 Vercel 後，
-        直接填相對路徑 "/api/registration" 即可（同網域、免 CORS）。
-        留空 "" = 示範模式（資料只暫存在瀏覽器，方便你先預覽版面）。
-   QR_LINK: 海外流量掃碼綁定連結（會產生 QR Code）。
-   ========================================================================= */
 const CONFIG = {
   API: "/api/registration",
-  QR_LINK: "https://www.tiktok.com/t/ZSXFg4ddf/"
+  QR_LINK: "https://www.tiktok.com/t/ZSaGheCf6/"
 };
 
 const QUOTA = 5;
@@ -390,7 +381,6 @@ let USED = {};
 
 if(DEMO){ document.getElementById('demoBanner').classList.add('show'); }
 
-/* ---------- backend helpers (Google Apps Script or DEMO/localStorage) ---------- */
 const localSignups=()=>{try{return JSON.parse(localStorage.getItem(SIGN_KEY)||'[]')}catch(e){return []}};
 const saveLocalSignups=a=>localStorage.setItem(SIGN_KEY,JSON.stringify(a));
 function localUsed(){
@@ -433,7 +423,6 @@ async function loadQuota(){
   catch(e){ console.warn('loadQuota fallback:',e); USED=localUsed(); }
 }
 
-/* ---------- period switch ---------- */
 const sw=document.getElementById('switch');
 sw.querySelectorAll('button').forEach(b=>{
   b.addEventListener('click',async ()=>{
@@ -445,30 +434,25 @@ sw.querySelectorAll('button').forEach(b=>{
   });
 });
 
-/* ---------- render slots ---------- */
 function renderSlots(){
   const P=PERIODS[currentP], used=USED;
   document.getElementById('pName').textContent=P.label;
   let periodRemain=0, periodTotal=0;
   slotGrid.innerHTML='';
   P.days.forEach(d=>{
-    let allFull=true, slotsHtml='';
+    let allFull=false, slotsHtml='';
     P.slots.forEach(s=>{
       const key=currentP+'|'+d.date+'|'+s;
-      const rem=QUOTA-(used[key]||0);
-      periodTotal+=QUOTA; periodRemain+=Math.max(0,rem);
-      if(rem>0) allFull=false;
-      const full=rem<=0, low=rem>0&&rem<=2, isSel=selected.has(key);
-      let dots=''; for(let i=0;i<QUOTA;i++) dots+='<span class="dot'+(i<(QUOTA-rem)?' used':'')+'"></span>';
+      const full=false, low=false, isSel=selected.has(key);
       slotsHtml+=
-        '<label class="slot'+(full?' full':'')+(low?' low':'')+(isSel?' sel':'')+'" data-key="'+key+'" data-date="'+d.date+'">'+
-          '<span class="t"><input type="checkbox" '+(isSel?'checked':'')+' '+(full?'disabled':'')+'>'+s+'</span>'+
-          '<span class="bal">'+(full?'額滿':'')+'</span>'+
+        '<label class="slot'+(isSel?' sel':'')+'" data-key="'+key+'" data-date="'+d.date+'">'+
+          '<span class="t"><input type="checkbox" '+(isSel?'checked':'')+'>'+s+'</span>'+
+          '<span class="bal"></span>'+
         '</label>';
     });
     const dayEl=document.createElement('div');
     dayEl.className='day'+(allFull?' day-full':'');
-    dayEl.innerHTML='<div class="day-h"><span class="d">'+d.date+'</span><span class="w">'+d.w+'</span><span class="full-tag">本日額滿</span></div><div class="slots">'+slotsHtml+'</div>';
+    dayEl.innerHTML='<div class="day-h"><span class="d">'+d.date+'</span><span class="w">'+d.w+'</span></div><div class="slots">'+slotsHtml+'</div>';
     slotGrid.appendChild(dayEl);
   });
   const _r=document.getElementById('pRemain'); if(_r)_r.textContent=periodRemain;
@@ -501,10 +485,8 @@ function bindSlots(){
   });
 }
 
-/* ---------- QR ---------- */
 if(window.QRCode){ try{ new QRCode(document.getElementById('qrcode'),{text:CONFIG.QR_LINK,width:100,height:100,colorDark:'#0e1422',colorLight:'#ffffff'}); }catch(e){ document.getElementById('qrcode').textContent='QR'; } }
 
-/* ---------- radio chips ---------- */
 form.querySelectorAll('input[type=radio]').forEach(r=>{
   r.addEventListener('change',e=>{
     form.querySelectorAll('input[name="'+e.target.name+'"]').forEach(o=>o.closest('.opt').classList.remove('sel'));
@@ -521,7 +503,6 @@ form.querySelectorAll('input[type=radio]').forEach(r=>{
   });
 });
 
-/* ---------- progressive flow ---------- */
 function byId(id){return document.getElementById(id)}
 function show(id,visible){const e=byId(id); if(e) e.style.display=visible?'':'none';}
 let lastStep=null;
@@ -562,7 +543,6 @@ function updateProgress(seq){
 
 const showErr=(n,s)=>{const el=form.querySelector('[data-err="'+n+'"]');if(el)el.classList.toggle('show',s);const i=form.querySelector('input[name="'+n+'"]');if(i&&i.type!=='radio')i.classList.toggle('invalid',s);};
 
-/* ---------- submit ---------- */
 form.addEventListener('submit',async e=>{
   e.preventDefault();
   const d=new FormData(form); let ok=true;
@@ -596,7 +576,6 @@ form.addEventListener('submit',async e=>{
   await loadQuota(); renderSlots(); updateFlow(); window.scrollTo({top:0,behavior:'smooth'});
 });
 
-/* ---------- my registrations ---------- */
 const myModal=document.getElementById('myModal');
 document.getElementById('myRegBtn').addEventListener('click',()=>{
   myModal.classList.add('show');
@@ -624,7 +603,6 @@ async function doLookup(){
   }).join('');
 }
 
-/* ---------- operator: open the Google Sheet ---------- */
 (function(){
   try{
     const p=new URLSearchParams(location.search);
@@ -644,7 +622,6 @@ document.getElementById('exportBtn').addEventListener('click',()=>{
   window.open(CONFIG.API+'?action=export','_blank');
 });
 
-/* ---------- confetti ---------- */
 function fireConfetti(){
   const cv=document.getElementById('confetti'); cv.classList.add('show');
   const ctx=cv.getContext('2d'); cv.width=innerWidth; cv.height=innerHeight;
@@ -662,7 +639,6 @@ function fireConfetti(){
 }
 addEventListener('resize',()=>{const cv=document.getElementById('confetti'); cv.width=innerWidth; cv.height=innerHeight;});
 
-/* ---------- init ---------- */
 (async function init(){ await loadQuota(); renderSlots(); updateFlow(); })();
 </script>
 </body>
