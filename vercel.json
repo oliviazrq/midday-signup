@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/registration?action=resync", "schedule": "0 15 * * *" }
+  ]
+}
