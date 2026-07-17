@@ -307,7 +307,7 @@
       </div>
       <div class="period-banner">
         <div class="pname">目前期數：<span id="pName">第三期</span></div>
-        <div class="premain">本期剩餘 🪄 <b id="pRemain">0</b>/<span id="pTotal">0</span></div>
+        <div class="premain" style="display:none">本期剩餘 🪄 <b id="pRemain">0</b>/<span id="pTotal">0</span></div>
       </div>
       <div id="slotGrid"></div>
       <div class="err" data-err="slots">請至少選擇一個申請時段</div>
@@ -463,7 +463,7 @@ function renderSlots(){
       slotsHtml+=
         '<label class="slot'+(full?' full':'')+(low?' low':'')+(isSel?' sel':'')+'" data-key="'+key+'" data-date="'+d.date+'">'+
           '<span class="t"><input type="checkbox" '+(isSel?'checked':'')+' '+(full?'disabled':'')+'>'+s+'</span>'+
-          '<span class="bal">🪄 '+(full?'額滿':('餘 '+rem+'/'+QUOTA))+'<span class="dots">'+dots+'</span></span>'+
+          '<span class="bal">'+(full?'額滿':'')+'</span>'+
         '</label>';
     });
     const dayEl=document.createElement('div');
