@@ -599,7 +599,7 @@ async function doLookup(){
     const base='<b>審核狀態：</b>'+badge+'<br><b>參與活動：</b>'+(r.plan||'-')+'<br><b>使用者名稱：</b>'+(r.username||'-')+'<br><b>申請時段：</b>'+(r.slots||'-');
     if(st==='rejected'){ return '<div class="my-rec">'+base+'</div>'; }
     let note='';
-    if(st==='pending'){ note='<div class="my-note pending">🔔 報名已送出，營運審核中；通過後將於此顯示通知。</div>'; }
+    if(st==='pending'){ note='<div class="my-note pending">🔔 報名已送出，通過後將於此顯示通知。</div>'; }
     else if(r.notify_msg){ note='<div class="my-note '+st+'">🔔 '+String(r.notify_msg).replace(/\n/g,'<br>')+'</div>'; }
     return '<div class="my-rec">'+base+'<br><b>報名時間：</b>'+t+note+'</div>';
   }).join('');
