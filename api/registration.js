@@ -14,13 +14,6 @@ const F = {
 };
 const STATUS_MAP = { '待審核': 'pending', '已通過': 'approved', '未通過': 'rejected' };
 
-function fmtTwTime() {
-  const d = new Date(Date.now() + 8 * 3600 * 1000);
-  const p = n => String(n).padStart(2, '0');
-  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) +
-    ' ' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds());
-}
-
 async function token() {
   const r = await fetch(DOMAIN + '/open-apis/auth/v3/tenant_access_token/internal', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -72,17 +65,40 @@ function usedMap(rows) {
   return used;
 }
 
+function periodName(p) {
+  if (p === '4') return '第四期';
+  if (p === '3') return '第三期';
+  return p ? ('第' + p + '期') : '其他';
+}
+
 function myRecords(rows, username) {
   const q = String(username || '').trim().toLowerCase().replace(/^@/, '');
   if (!q) return [];
-  return rows.filter(r => txt(r[F.username]).trim().toLowerCase().replace(/^@/, '') === q).map(r => {
-    const label = txt(r[F.status]) || '待審核';
-    return {
-      submitted_at: txt(r[F.submitted_at]), plan: txt(r[F.plan]), scanned: txt(r[F.scanned]),
-      username: txt(r[F.username]), videourl: txt(r[F.videourl]), slots: txt(r[F.slots]),
-      status: STATUS_MAP[label] || 'pending', status_label: label, notify_msg: txt(r[F.notify])
-    };
+  const mine = rows.filter(r => txt(r[F.username]).trim().toLowerCase().replace(/^@/, '') === q);
+  const byPeriod = {};
+  mine.forEach(r => {
+    const p = txt(r[F.period]) || '-';
+    (byPeriod[p] = byPeriod[p] || []).push(r);
   });
+  const out = [];
+  Object.keys(byPeriod).sort().forEach(p => {
+    const recs = byPeriod[p];
+    const labels = recs.map(r => txt(r[F.status]) || '待審核');
+    let label;
+    if (labels.some(l => l === '未通過')) label = '未通過';
+    else if (labels.length && labels.every(l => l === '已通過')) label = '已通過';
+    else label = '待審核';
+    const slotList = recs.map(r => txt(r[F.slots]).replace(/^第\S+期\s*/, '')).filter(Boolean);
+    const slotsText = periodName(p) + '：' + slotList.join('、');
+    const notify = recs.map(r => txt(r[F.notify])).filter(Boolean).join('\n');
+    const submitted = recs.map(r => txt(r[F.submitted_at])).filter(Boolean).sort()[0] || '';
+    out.push({
+      submitted_at: submitted, plan: txt(recs[0][F.plan]), scanned: txt(recs[0][F.scanned]),
+      username: txt(recs[0][F.username]), videourl: txt(recs[0][F.videourl]), slots: slotsText,
+      status: STATUS_MAP[label] || 'pending', status_label: label, notify_msg: notify
+    });
+  });
+  return out;
 }
 
 async function register(tk, d) {
@@ -112,7 +128,7 @@ async function register(tk, d) {
 
   const label = (d.period === '4' ? '第四期' : '第三期') + ' ' + d.date + ' ' + d.slot;
   const fields = {};
-  fields[F.submitted_at] = fmtTwTime();
+  fields[F.submitted_at] = (dd=>{const p=n=>String(n).padStart(2,'0');return dd.getUTCFullYear()+'-'+p(dd.getUTCMonth()+1)+'-'+p(dd.getUTCDate())+' '+p(dd.getUTCHours())+':'+p(dd.getUTCMinutes())+':'+p(dd.getUTCSeconds());})(new Date(Date.now()+8*3600*1000));
   fields[F.plan] = d.plan; fields[F.scanned] = d.scanned || '';
   fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
   fields[F.period] = String(d.period);
