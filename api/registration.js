@@ -164,7 +164,6 @@ function overviewGroups(rows) {
     fields[OF.status] = label;
     fields[OF.plan] = recs.map(r => txt(r[F.plan])).filter(Boolean)[0] || '';
     fields[OF.videourl] = recs.map(r => txt(r[F.videourl])).filter(Boolean)[0] || '';
-    fields[OF.notify] = recs.map(r => txt(r[F.notify])).filter(Boolean).join('\n');
     fields[OF.latest] = latest;
     map[k] = fields;
   });
@@ -258,7 +257,7 @@ async function register(tk, d) {
   fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
   fields[F.period] = String(d.period);
   fields[F.key] = key; fields[F.slots] = label;
-  fields[F.status] = '待審核'; fields[F.notify] = '';
+  fields[F.status] = '待審核';
   await createRecord(tk, fields);
   // 即時同步「主播總覽」彙總表（一位主播一行）
   rows.push(fields);
