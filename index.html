@@ -592,16 +592,10 @@ async function doLookup(){
   if(raw){ try{ list=await apiMy(raw); }catch(e){ console.warn('lookup fail',e); list=[]; } }
   if(!list.length){ box.innerHTML='<div class="my-empty">查無報名紀錄。請確認 TikTok 使用者名稱是否正確。</div>'; return; }
   box.innerHTML=list.slice().reverse().map(r=>{
-    let t='';try{t=new Date(r.submitted_at).toLocaleString('zh-TW')}catch(e){t=r.submitted_at||'-'}
     const st=r.status||'pending';
     const stLabel=r.status_label||({pending:'待審核',approved:'已通過',rejected:'未通過'}[st]||st);
     const badge='<span class="st-badge '+st+'">'+stLabel+'</span>';
-    const base='<b>審核狀態：</b>'+badge+'<br><b>參與活動：</b>'+(r.plan||'-')+'<br><b>使用者名稱：</b>'+(r.username||'-')+'<br><b>申請時段：</b>'+(r.slots||'-');
-    if(st==='rejected'){ return '<div class="my-rec">'+base+'</div>'; }
-    let note='';
-    if(st==='pending'){ note='<div class="my-note pending">🔔 報名已送出，通過後將於此顯示通知。</div>'; }
-    else if(r.notify_msg){ note='<div class="my-note '+st+'">🔔 '+String(r.notify_msg).replace(/\n/g,'<br>')+'</div>'; }
-    return '<div class="my-rec">'+base+'<br><b>報名時間：</b>'+t+note+'</div>';
+    return '<div class="my-rec"><b>審核狀態：</b>'+badge+'<br><b>參與活動：</b>'+(r.plan||'-')+'<br><b>使用者名稱：</b>'+(r.username||'-')+'<br><b>申請時段：</b>'+(r.slots||'-')+'</div>';
   }).join('');
 }
 
