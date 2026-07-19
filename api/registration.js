@@ -3,8 +3,15 @@
  *  路徑：/api/registration
  *  ----------------------------------------------------------------------
  *  作用：外部主播在公開報名頁送出的資料，經過這支函式安全地寫進你的
- *        飛書多維表格；名額、查詢、匯出也都由這裡處理。
+ *        飛書多維表格；查詢、匯出也都由這裡處理。
  *        飛書的 App Secret 只放在伺服器環境變數，不會出現在網頁裡。
+ *
+ *  【本版重點｜一位主播一行】
+ *    - 原始報名表現在採「一位主播（同一期）＝一行」結構。
+ *    - 主播每報名一個新時段，會「合併寫進同一行」的「申請時段」欄，
+ *      不會再新增一列，所以整張表維持一主播一行、按報名時間排序。
+ *    - 審核狀態一個主播（同一期）只有一個，運營直接在這行改即可。
+ *    - action=resync 可把任何殘留的多列自動合併回一行（自我修復）。
  *
  *  【需要設定的 Vercel 環境變數 (Settings → Environment Variables)】
  *    FEISHU_APP_ID       自建應用的 App ID
@@ -13,7 +20,6 @@
  *    FEISHU_TABLE_ID     資料表的 table_id
  *    FEISHU_DOMAIN       (選填) 飛書=https://open.feishu.cn (預設)
  *                              Lark 國際版=https://open.larksuite.com
- *  詳見 README.md
  *************************************************************************/
 
 const DOMAIN = process.env.FEISHU_DOMAIN || 'https://open.feishu.cn';
@@ -21,7 +27,6 @@ const APP_ID = process.env.FEISHU_APP_ID;
 const APP_SECRET = process.env.FEISHU_APP_SECRET;
 const APP_TOKEN = process.env.FEISHU_APP_TOKEN;
 const TABLE_ID = process.env.FEISHU_TABLE_ID;
-const QUOTA = 5;
 const ONE_SLOT_PER_DAY = true;
 
 // 飛書多維表格的欄位名稱（對應你表格裡實際的欄位）
@@ -33,14 +38,6 @@ const F = {
 };
 const STATUS_MAP = { '待審核': 'pending', '已通過': 'approved', '未通過': 'rejected' };
 
-// ---- 主播總覽（彙總表）：一位主播一行，後端自動同步 ----
-const OV_TABLE_ID = process.env.FEISHU_OVERVIEW_TABLE_ID || 'tbl5TsO0wVNlWzzR';
-const OF = {
-  username: 'TikTok使用者名稱', period: '期數', slotsSum: '申請時段彙總',
-  slotCount: '時段數', status: '整體審核狀態', plan: '參與活動',
-  videourl: '作品連結', notify: '通知訊息', latest: '最新報名時間'
-};
-
 async function token() {
   const r = await fetch(DOMAIN + '/open-apis/auth/v3/tenant_access_token/internal', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -51,6 +48,7 @@ async function token() {
   return j.tenant_access_token;
 }
 
+// 回傳 [{ id, fields }]，帶 record_id 以便就地更新（一主播一行的關鍵）
 async function listAll(tk) {
   const out = [];
   let pageToken = '';
@@ -60,17 +58,41 @@ async function listAll(tk) {
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
     const j = await r.json();
     if (j.code !== 0) throw new Error('讀取表格失敗：' + (j.msg || JSON.stringify(j)));
-    (j.data.items || []).forEach(it => out.push(it.fields || {}));
+    (j.data.items || []).forEach(it => out.push({ id: it.record_id, fields: it.fields || {} }));
     pageToken = j.data.has_more ? j.data.page_token : '';
   } while (pageToken);
   return out;
 }
+
 const txt = v => {
   if (v == null) return '';
   if (Array.isArray(v)) return v.map(x => (x && x.text) || x).join('');
   if (typeof v === 'object') return v.text || v.link || '';
   return String(v);
 };
+function normU(s) { return String(s || '').trim().toLowerCase().replace(/^@/, ''); }
+function lines(s) { return txt(s).split('\n').map(x => x.trim()).filter(Boolean); }
+function submitMs(s) {
+  if (!s) return 0;
+  const t = Date.parse(String(s).trim().replace(' ', 'T') + '+08:00');
+  return isNaN(t) ? 0 : t;
+}
+function nowStr() {
+  const d = new Date(Date.now() + 8 * 3600 * 1000);
+  const p = n => String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + ' ' +
+    p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds());
+}
+function periodName(p) {
+  if (p === '4') return '第四期';
+  if (p === '3') return '第三期';
+  return p ? ('第' + p + '期') : '其他';
+}
+function aggStatus(labels) {
+  if (labels.some(l => l === '未通過')) return '未通過';
+  if (labels.length && labels.every(l => l === '已通過')) return '已通過';
+  return '待審核';
+}
 
 async function createRecord(tk, fields) {
   const r = await fetch(DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + TABLE_ID + '/records', {
@@ -81,150 +103,56 @@ async function createRecord(tk, fields) {
   if (j.code !== 0) throw new Error('寫入表格失敗：' + (j.msg || JSON.stringify(j)));
   return j;
 }
+async function updateRecord(tk, recordId, fields) {
+  const r = await fetch(DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + TABLE_ID + '/records/' + recordId, {
+    method: 'PUT', headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields })
+  });
+  const j = await r.json();
+  if (j.code !== 0) throw new Error('更新表格失敗：' + (j.msg || JSON.stringify(j)));
+  return j;
+}
+async function batchDelete(tk, ids) {
+  if (!ids.length) return;
+  const r = await fetch(DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + TABLE_ID + '/records/batch_delete', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ records: ids })
+  });
+  const j = await r.json();
+  if (j.code !== 0) throw new Error('刪除記錄失敗：' + (j.msg || JSON.stringify(j)));
+  return j;
+}
 
+// 名額使用量（每個時段 key 各算一次；整位主播未通過的不計）
 function usedMap(rows) {
   const used = {};
   rows.forEach(r => {
-    if (txt(r[F.status]) === '未通過') return;
-    const k = txt(r[F.key]);
-    if (k) used[k] = (used[k] || 0) + 1;
+    if (txt(r.fields[F.status]) === '未通過') return;
+    lines(r.fields[F.key]).forEach(k => { used[k] = (used[k] || 0) + 1; });
   });
   return used;
 }
 
-function periodName(p) {
-  if (p === '4') return '第四期';
-  if (p === '3') return '第三期';
-  return p ? ('第' + p + '期') : '其他';
-}
-
-// 以「主播 + 期」為維度彙整：同一期只要有一筆未通過 → 整期未通過；全部已通過 → 整期已通過；否則待審核
+// 查詢：一位主播一行（同一期），直接回傳該行狀態與時段清單
 function myRecords(rows, username) {
-  const q = String(username || '').trim().toLowerCase().replace(/^@/, '');
+  const q = normU(username);
   if (!q) return [];
-  const mine = rows.filter(r => txt(r[F.username]).trim().toLowerCase().replace(/^@/, '') === q);
-  const byPeriod = {};
-  mine.forEach(r => {
-    const p = txt(r[F.period]) || '-';
-    (byPeriod[p] = byPeriod[p] || []).push(r);
-  });
-  const out = [];
-  Object.keys(byPeriod).sort().forEach(p => {
-    const recs = byPeriod[p];
-    const labels = recs.map(r => txt(r[F.status]) || '待審核');
-    let label;
-    if (labels.some(l => l === '未通過')) label = '未通過';
-    else if (labels.length && labels.every(l => l === '已通過')) label = '已通過';
-    else label = '待審核';
-    const slotList = recs.map(r => txt(r[F.slots]).replace(/^第\S+期\s*/, '')).filter(Boolean);
+  const mine = rows.filter(r => normU(txt(r.fields[F.username])) === q);
+  return mine.map(r => {
+    const f = r.fields;
+    const label = txt(f[F.status]) || '待審核';
+    const p = txt(f[F.period]);
+    const slotList = lines(f[F.slots]).map(s => s.replace(/^第\S+期\s*/, ''));
     const slotsText = periodName(p) + '：' + slotList.join('、');
-    const notify = recs.map(r => txt(r[F.notify])).filter(Boolean).join('\n');
-    const submitted = recs.map(r => txt(r[F.submitted_at])).filter(Boolean).sort()[0] || '';
-    out.push({
-      submitted_at: submitted, plan: txt(recs[0][F.plan]), scanned: txt(recs[0][F.scanned]),
-      username: txt(recs[0][F.username]), videourl: txt(recs[0][F.videourl]), slots: slotsText,
-      status: STATUS_MAP[label] || 'pending', status_label: label, notify_msg: notify
-    });
-  });
-  return out;
+    return {
+      plan: txt(f[F.plan]), username: txt(f[F.username]), slots: slotsText,
+      status: STATUS_MAP[label] || 'pending', status_label: label,
+      _ms: submitMs(txt(f[F.submitted_at]))
+    };
+  }).sort((a, b) => a._ms - b._ms);
 }
 
-// 由原始表所有列，彙整成「主播+期」→ 總覽欄位物件
-function submitMs(s) {
-  if (!s) return 0;
-  const t = Date.parse(String(s).trim().replace(' ', 'T') + '+08:00');
-  return isNaN(t) ? 0 : t;
-}
-function normU(s) { return String(s || '').trim().toLowerCase().replace(/^@/, ''); }
-function overviewGroups(rows) {
-  const g = {};
-  rows.forEach(r => {
-    const u = txt(r[F.username]).trim();
-    const ul = normU(u);
-    const p = String(txt(r[F.period]) || '');
-    if (!ul || !p) return;
-    const k = ul + '|' + p;
-    (g[k] = g[k] || { rows: [], username: u, period: p }).rows.push(r);
-  });
-  const map = {};
-  Object.keys(g).forEach(k => {
-    const recs = g[k].rows;
-    const labels = recs.map(r => txt(r[F.status]) || '待審核');
-    let label;
-    if (labels.some(l => l === '未通過')) label = '未通過';
-    else if (labels.length && labels.every(l => l === '已通過')) label = '已通過';
-    else label = '待審核';
-    let latest = 0; recs.forEach(r => { const ms = submitMs(txt(r[F.submitted_at])); if (ms > latest) latest = ms; });
-    if (!latest) latest = Date.now();
-    const fields = {};
-    fields[OF.username] = g[k].username;
-    fields[OF.period] = g[k].period;
-    fields[OF.slotsSum] = recs.map(r => txt(r[F.slots])).filter(Boolean).join('\n');
-    fields[OF.slotCount] = recs.length;
-    fields[OF.status] = label;
-    fields[OF.plan] = recs.map(r => txt(r[F.plan])).filter(Boolean)[0] || '';
-    fields[OF.videourl] = recs.map(r => txt(r[F.videourl])).filter(Boolean)[0] || '';
-    fields[OF.latest] = latest;
-    map[k] = fields;
-  });
-  return map;
-}
-async function ovList(tk) {
-  const out = []; let pt = '';
-  do {
-    const url = DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + OV_TABLE_ID +
-      '/records?page_size=500' + (pt ? '&page_token=' + pt : '');
-    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + tk } });
-    const j = await r.json();
-    if (j.code !== 0) throw new Error('讀取總覽表失敗：' + (j.msg || JSON.stringify(j)));
-    (j.data.items || []).forEach(it => out.push({ id: it.record_id, fields: it.fields || {} }));
-    pt = j.data.has_more ? j.data.page_token : '';
-  } while (pt);
-  return out;
-}
-async function ovBatch(tk, op, payload) {
-  const r = await fetch(DOMAIN + '/open-apis/bitable/v1/apps/' + APP_TOKEN + '/tables/' + OV_TABLE_ID + '/records/' + op, {
-    method: 'POST', headers: { Authorization: 'Bearer ' + tk, 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const j = await r.json();
-  if (j.code !== 0) throw new Error('總覽表 ' + op + ' 失敗：' + (j.msg || JSON.stringify(j)));
-  return j;
-}
-// 即時：新報名後只同步「這一位主播＋期」，其他不動
-async function syncOne(tk, rows, username, period) {
-  try {
-    const all = overviewGroups(rows);
-    const fields = all[normU(username) + '|' + String(period)];
-    if (!fields) return;
-    const exist = await ovList(tk);
-    const hit = exist.find(it => normU(txt(it.fields[OF.username])) === normU(username) &&
-      String(txt(it.fields[OF.period])) === String(period));
-    if (hit) await ovBatch(tk, 'batch_update', { records: [{ record_id: hit.id, fields }] });
-    else await ovBatch(tk, 'batch_create', { records: [{ fields }] });
-  } catch (e) { console.warn('overview syncOne fail:', e && e.message); }
-}
-// 全量：重建整張總覽（能同步後台手動改過的審核狀態），由排程或手動觸發
-async function resyncAll(tk) {
-  const rows = await listAll(tk);
-  const desired = overviewGroups(rows);
-  const exist = await ovList(tk);
-  const existMap = {};
-  exist.forEach(it => { existMap[normU(txt(it.fields[OF.username])) + '|' + String(txt(it.fields[OF.period]) || '')] = it.id; });
-  const toCreate = [], toUpdate = [], seen = {};
-  Object.keys(desired).forEach(k => {
-    seen[k] = true;
-    if (existMap[k]) toUpdate.push({ record_id: existMap[k], fields: desired[k] });
-    else toCreate.push({ fields: desired[k] });
-  });
-  const toDelete = Object.keys(existMap).filter(k => !seen[k]).map(k => existMap[k]);
-  const chunk = (a, n) => { const o = []; for (let i = 0; i < a.length; i += n) o.push(a.slice(i, i + n)); return o; };
-  for (const c of chunk(toCreate, 500)) await ovBatch(tk, 'batch_create', { records: c });
-  for (const c of chunk(toUpdate, 500)) await ovBatch(tk, 'batch_update', { records: c });
-  for (const c of chunk(toDelete, 500)) await ovBatch(tk, 'batch_delete', { records: c });
-  return { groups: Object.keys(desired).length, created: toCreate.length, updated: toUpdate.length, deleted: toDelete.length };
-}
-
+// 報名：一位主播（同一期）＝一行。已有該行 → 把新時段併進同一行；沒有 → 新建一行
 async function register(tk, d) {
   const uname = String(d.username || '').trim();
   const vurl = String(d.videourl || '').trim();
@@ -234,46 +162,98 @@ async function register(tk, d) {
   if (!d.period || !d.date || !d.slot) return { ok: false, detail: '缺少申請時段' };
 
   const key = d.period + '|' + d.date + '|' + d.slot;
+  const label = periodName(String(d.period)) + ' ' + d.date + ' ' + d.slot;
   const rows = await listAll(tk);
-  const unameLower = uname.toLowerCase().replace(/^@/, '');
-  let count = 0;
-  for (const r of rows) {
-    if (txt(r[F.status]) === '未通過') continue;
-    const rk = txt(r[F.key]);
-    const parts = rk.split('|');
-    const rperiod = parts[0] || '', rdate = parts[1] || '';
-    const ru = txt(r[F.username]).toLowerCase().replace(/^@/, '');
-    if (rk === key) count++;
-    if (rk === key && ru === unameLower) return { ok: false, detail: '您已報名過此時段，請至「查看我的報名」確認。' };
-    if (ONE_SLOT_PER_DAY && rperiod == d.period && rdate == d.date && ru === unameLower)
-      return { ok: false, detail: '同一天僅能申請一個時段，您當天已有報名。' };
-  }
-  // 名額上限已取消：不再限制每個時段的報名數量，主播可正常報名
+  const uL = normU(uname);
+  const hit = rows.find(r => normU(txt(r.fields[F.username])) === uL &&
+    String(txt(r.fields[F.period])) === String(d.period));
 
-  const label = (d.period === '4' ? '第四期' : '第三期') + ' ' + d.date + ' ' + d.slot;
+  if (hit) {
+    const keys = lines(hit.fields[F.key]);
+    for (const rk of keys) {
+      const parts = rk.split('|');
+      if (rk === key) return { ok: false, detail: '您已報名過此時段，請至「查看我的報名」確認。' };
+      if (ONE_SLOT_PER_DAY && parts[1] === d.date)
+        return { ok: false, detail: '同一天僅能申請一個時段，您當天已有報名。' };
+    }
+    const slots = lines(hit.fields[F.slots]);
+    if (!slots.includes(label)) slots.push(label);
+    keys.push(key);
+    const fields = {};
+    fields[F.submitted_at] = nowStr();
+    fields[F.slots] = slots.join('\n');
+    fields[F.key] = keys.join('\n');
+    // 若原本作品連結為空，補上；狀態沿用原本審核結果不覆蓋
+    if (!txt(hit.fields[F.videourl]) && vurl) fields[F.videourl] = vurl;
+    await updateRecord(tk, hit.id, fields);
+    return { ok: true };
+  }
+
   const fields = {};
-  fields[F.submitted_at] = (dd=>{const p=n=>String(n).padStart(2,'0');return dd.getUTCFullYear()+'-'+p(dd.getUTCMonth()+1)+'-'+p(dd.getUTCDate())+' '+p(dd.getUTCHours())+':'+p(dd.getUTCMinutes())+':'+p(dd.getUTCSeconds());})(new Date(Date.now()+8*3600*1000));
+  fields[F.submitted_at] = nowStr();
   fields[F.plan] = d.plan; fields[F.scanned] = d.scanned || '';
-  fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
+  fields[F.username] = uname; fields[F.videourl] = vurl;
   fields[F.period] = String(d.period);
   fields[F.key] = key; fields[F.slots] = label;
   fields[F.status] = '待審核';
   await createRecord(tk, fields);
-  // 即時同步「主播總覽」彙總表（一位主播一行）
-  rows.push(fields);
-  await syncOne(tk, rows, uname, String(d.period));
   return { ok: true };
+}
+
+// 自我修復：把任何殘留的「同一主播＋同期多列」合併回一行
+async function resyncAll(tk) {
+  const rows = await listAll(tk);
+  const g = {};
+  rows.forEach(r => {
+    const u = normU(txt(r.fields[F.username]));
+    const p = String(txt(r.fields[F.period]) || '');
+    if (!u || !p) return;
+    (g[u + '|' + p] = g[u + '|' + p] || []).push(r);
+  });
+  let merged = 0; const toDelete = [];
+  for (const k of Object.keys(g)) {
+    const grp = g[k];
+    if (grp.length < 2) continue;
+    const slots = [], keys = [], labels = [];
+    let latestMs = 0, latestStr = '', plan = '', scanned = '', username = '', videourl = '', period = '';
+    grp.forEach(r => {
+      const f = r.fields;
+      lines(f[F.slots]).forEach(s => { if (!slots.includes(s)) slots.push(s); });
+      lines(f[F.key]).forEach(s => { if (!keys.includes(s)) keys.push(s); });
+      labels.push(txt(f[F.status]) || '待審核');
+      const ms = submitMs(txt(f[F.submitted_at]));
+      if (ms >= latestMs) { latestMs = ms; latestStr = txt(f[F.submitted_at]) || latestStr; }
+      if (!plan) plan = txt(f[F.plan]);
+      if (!scanned) scanned = txt(f[F.scanned]);
+      if (!username) username = txt(f[F.username]);
+      if (!videourl) videourl = txt(f[F.videourl]);
+      if (!period) period = txt(f[F.period]);
+    });
+    const fields = {};
+    fields[F.submitted_at] = latestStr;
+    fields[F.slots] = slots.join('\n');
+    fields[F.key] = keys.join('\n');
+    fields[F.status] = aggStatus(labels);
+    fields[F.plan] = plan; fields[F.scanned] = scanned;
+    fields[F.username] = username; fields[F.videourl] = videourl; fields[F.period] = period;
+    await updateRecord(tk, grp[0].id, fields);
+    merged++;
+    grp.slice(1).forEach(r => toDelete.push(r.id));
+  }
+  for (let i = 0; i < toDelete.length; i += 200) await batchDelete(tk, toDelete.slice(i, i + 200));
+  return { rows: rows.length, mergedGroups: merged, deletedRows: toDelete.length };
 }
 
 function csv(rows) {
   const head = ['報名時間', '參與活動', '掃碼授權', 'TikTok使用者名稱', '作品連結', '期數', '申請時段', '審核狀態'];
-  const lines = [head.join(',')];
+  const lines2 = [head.join(',')];
   rows.forEach(r => {
+    const f = r.fields;
     const row = [F.submitted_at, F.plan, F.scanned, F.username, F.videourl, F.period, F.slots, F.status]
-      .map(k => '"' + txt(r[k]).replace(/"/g, '""') + '"');
-    lines.push(row.join(','));
+      .map(k => '"' + txt(f[k]).replace(/"/g, '""').replace(/\n/g, ' / ') + '"');
+    lines2.push(row.join(','));
   });
-  return '\ufeff' + lines.join('\n');
+  return '\ufeff' + lines2.join('\n');
 }
 
 module.exports = async (req, res) => {
