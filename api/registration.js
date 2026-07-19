@@ -72,6 +72,17 @@ const txt = v => {
 };
 function normU(s) { return String(s || '').trim().toLowerCase().replace(/^@/, ''); }
 function lines(s) { return txt(s).split('\n').map(x => x.trim()).filter(Boolean); }
+// 「作品連結」是 URL 型欄位，Bitable API 需要 { link, text } 物件格式，不能寫純字串
+function urlCell(raw) {
+  let link = '', text = '';
+  if (raw == null) { link = text = ''; }
+  else if (Array.isArray(raw)) { raw.forEach(x => { if (x && x.link) link = x.link; if (x && x.text) text = x.text; }); }
+  else if (typeof raw === 'object') { link = raw.link || ''; text = raw.text || ''; }
+  else { link = text = String(raw); }
+  link = link || text; text = text || link;
+  if (!link) return null;
+  return { link, text };
+}
 function submitMs(s) {
   if (!s) return 0;
   const t = Date.parse(String(s).trim().replace(' ', 'T') + '+08:00');
@@ -184,7 +195,7 @@ async function register(tk, d) {
     fields[F.slots] = slots.join('\n');
     fields[F.key] = keys.join('\n');
     // 若原本作品連結為空，補上；狀態沿用原本審核結果不覆蓋
-    if (!txt(hit.fields[F.videourl]) && vurl) fields[F.videourl] = vurl;
+    if (!txt(hit.fields[F.videourl]) && vurl) fields[F.videourl] = { link: vurl, text: vurl };
     await updateRecord(tk, hit.id, fields);
     return { ok: true };
   }
@@ -192,7 +203,7 @@ async function register(tk, d) {
   const fields = {};
   fields[F.submitted_at] = nowStr();
   fields[F.plan] = d.plan; fields[F.scanned] = d.scanned || '';
-  fields[F.username] = uname; fields[F.videourl] = vurl;
+  fields[F.username] = uname; fields[F.videourl] = { link: vurl, text: vurl };
   fields[F.period] = String(d.period);
   fields[F.key] = key; fields[F.slots] = label;
   fields[F.status] = '待審核';
@@ -215,7 +226,7 @@ async function resyncAll(tk) {
     const grp = g[k];
     if (grp.length < 2) continue;
     const slots = [], keys = [], labels = [];
-    let latestMs = 0, latestStr = '', plan = '', scanned = '', username = '', videourl = '', period = '';
+    let latestMs = 0, latestStr = '', plan = '', scanned = '', username = '', videourlRaw = null, period = '';
     grp.forEach(r => {
       const f = r.fields;
       lines(f[F.slots]).forEach(s => { if (!slots.includes(s)) slots.push(s); });
@@ -226,7 +237,7 @@ async function resyncAll(tk) {
       if (!plan) plan = txt(f[F.plan]);
       if (!scanned) scanned = txt(f[F.scanned]);
       if (!username) username = txt(f[F.username]);
-      if (!videourl) videourl = txt(f[F.videourl]);
+      if (videourlRaw == null && txt(f[F.videourl])) videourlRaw = f[F.videourl];
       if (!period) period = txt(f[F.period]);
     });
     const fields = {};
@@ -235,7 +246,8 @@ async function resyncAll(tk) {
     fields[F.key] = keys.join('\n');
     fields[F.status] = aggStatus(labels);
     fields[F.plan] = plan; fields[F.scanned] = scanned;
-    fields[F.username] = username; fields[F.videourl] = videourl; fields[F.period] = period;
+    fields[F.username] = username; fields[F.period] = period;
+    const uc = urlCell(videourlRaw); if (uc) fields[F.videourl] = uc;
     await updateRecord(tk, grp[0].id, fields);
     merged++;
     grp.slice(1).forEach(r => toDelete.push(r.id));
@@ -279,7 +291,7 @@ module.exports = async (req, res) => {
         res.setHeader('Content-Disposition', 'attachment; filename="signups.csv"');
         return res.status(200).send(csv(await listAll(tk)));
       }
-      return res.status(200).json({ ok: true, msg: 'alive' });
+      return res.status(200).json({ ok: true, msg: 'alive', ver: 'urlfix-2' });
     }
 
     if (req.method === 'POST') {
